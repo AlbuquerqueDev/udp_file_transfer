@@ -1,8 +1,8 @@
 import struct
-import os
+import socket
 
 HOST = '127.0.0.1'
-PORT = 60000
+PORT = 60001
 
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
     file_name = input("Informe o nome do arquivo para download: ")
@@ -22,35 +22,38 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
 
     fn_bytes = file_name.encode('utf-8')
     s.sendto(fn_bytes, (HOST, PORT))
-    
+
     print(f"Arquivo soolicitado: {file_name}")
 
     try:
         status_data, addr = s.recvfrom(1)
-    except s.timeout:
+    except socket.timeout:
         print("ERRO: tempo de espera excedido.")
         exit(1)
-    except s.ConnectionRefusedError:
-        print("ERRO: Conexão perdida: porta inacessiva")
+    except socket.ConnectionRefusedError:
+        print("ERRO: Conexão perdida: porta inacessível")
 
     status = struct.unpack('>B', status_data)[0]
-    
-    if status == 0:
+
+    if status == 1:
         print("Arquivo não existe.")
-    elif status == 1:
+    elif status == 0:
         print("Arquivo encontrado! Iniciando o download.")
     else:
         print("Erro durante a requisição do nome de arquivo.")
-    
-    try:
-        size_file, addr = s.recvfrom(4)
-    except s.timeout:
-        print("ERRO: tempo de espera excedido.")
-    except s.ConnectionRefusedError:
-        print("ERRO: Conexão perdida: porta inacessiva")
 
-        if size_file != 4:
-            print("tamanho de arquivo inválido.")
-            exit(1)
-        
-        sf_length = struct.unpack('>I', size_file)[0]
+    try:
+        file_size_bytes, addr = s.recvfrom(4)
+    except socket.timeout:
+        print("ERRO: tempo de espera excedido.")
+        exit(1)
+    except socket.ConnectionRefusedError:
+        print("ERRO: Conexão perdida: porta inacessiva")
+        exit(1)
+
+    if len(file_size_bytes) != 4:
+        print("tamanho de arquivo inválido.")
+        exit(1)
+
+    file_size = struct.unpack('>I', file_size_bytes)[0]
+    print(f"Tamanho do arquivo: {file_size} bytes")
