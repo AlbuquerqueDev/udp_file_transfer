@@ -2,17 +2,27 @@ import socket
 import struct
 import os
 
-HOST = '127.0.0.1'
-PORT = 60001
+HOST = '10.25.1.162'
+PORT = 60000
 
 FILE_NAME = "teste.txt"
 
-try:
-    with open(FILE_NAME, "w") as f:
-        f.write("Arquivo de teste para download.")
-except IOError as e:
-    print(f"Falha ao salvar o arquivo: {e}")
-    exit(1)
+def send_file(s, addr, file_name):
+    bytes_sent = 0
+    with open(file_name, 'rb') as f:
+        while True:
+            data = f.read(4096)
+            if not data:
+                break
+            s.sendto(data, addr)
+    print(f"Arquivo {file_name} enviado com sucesso.")
+
+#try:
+#    with open(FILE_NAME, "w") as f:
+#        f.write("Arquivo de teste para download.")
+#except IOError as e:
+#    print(f"Falha ao salvar o arquivo: {e}")
+#    exit(1)
 
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
     s.bind((HOST, PORT))
@@ -20,19 +30,19 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
     print(f"Aceitando conexões em {HOST}:{PORT}")
     while True:
         try:
-            file_name_bytes, addr = s.recvfrom(1)
-            file_name_length = struct.unpack('>B', file_name_bytes)[0]
+            file_length_data, addr = s.recvfrom(1)
+            file_name_length = struct.unpack('>B', file_length_data)[0]
 
-            file_name_bytes, _ = s.recvfrom(file_name_length)
-            file_name = file_name_bytes.decode('utf-8')
+            file_name_data, _ = s.recvfrom(file_name_length)
+            file_name = file_name_data.decode()
 
             print(f"Arquivo solicitado: {file_name}")
 
             if file_name != "teste.txt":
-                status = struct.pack('>B', 1)
+                status = struct.pack('>B', 0)
                 s.sendto(status, addr)
 
-            status = struct.pack('>B', 0)
+            status = struct.pack('>B', 1)
             s.sendto(status, addr)
             print(f"Arquivo encontrado: {FILE_NAME}")
 
@@ -41,6 +51,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
 
             size_bytes = struct.pack('>I', file_size)
             s.sendto(size_bytes, addr)
+
+            send_file(s, addr, FILE_NAME)
         except socket.timeout:
             print("Timeout ao aguardar dados do cliente.")
             continue
@@ -52,3 +64,4 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
             except:
                 pass
             continue
+            
