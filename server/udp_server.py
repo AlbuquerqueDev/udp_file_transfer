@@ -2,7 +2,11 @@ import socket
 import struct
 import os
 
+<<<<<<< HEAD
 HOST = '10.25.1.115'
+=======
+HOST = '10.25.1.162'
+>>>>>>> e539a3eef4d0163f8a4c029d9d74176482b7d2ac
 PORT = 60000
 
 FILE_NAME = "teste.txt"
@@ -51,6 +55,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
 
             size_bytes = struct.pack('>I', file_size)
             s.sendto(size_bytes, addr)
+<<<<<<< HEAD
+=======
+
+>>>>>>> e539a3eef4d0163f8a4c029d9d74176482b7d2ac
             send_file(s, addr, FILE_NAME)
         except socket.timeout:
             print("Timeout ao aguardar dados do cliente.")
@@ -63,4 +71,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
             except:
                 pass
             continue
+<<<<<<< HEAD
             
+=======
+            
+>>>>>>> e539a3eef4d0163f8a4c029d9d74176482b7d2ac
