@@ -1,7 +1,7 @@
 import struct
 import socket
 
-HOST = '10.25.1.115'
+HOST = '127.0.0.1'
 PORT = 60000
 
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
